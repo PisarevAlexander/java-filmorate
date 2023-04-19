@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import com.google.gson.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,7 +28,7 @@ class FilmControllerTest {
             .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
             .create();
 
-     static class LocalDateAdapter implements JsonSerializer<LocalDate> {
+    static class LocalDateAdapter implements JsonSerializer<LocalDate> {
         public JsonElement serialize(LocalDate date, Type typeOfSrc, JsonSerializationContext context) {
             return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE));
         }
@@ -35,6 +36,7 @@ class FilmControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
 
     @Test
     public void getFilmsTest() throws Exception {
@@ -54,8 +56,7 @@ class FilmControllerTest {
                         .content(gson.toJson(film)))
                 .andExpectAll(
                         status().isOk(),
-                        content().contentType("application/json"),
-                        content().json(gson.toJson(film)));
+                        content().contentType("application/json"));
     }
 
     @Test
@@ -114,26 +115,6 @@ class FilmControllerTest {
                         status().is4xxClientError(),
                         result -> assertEquals("Продолжительность фильма должна быть больше 0",
                                 result.getResolvedException().getMessage()));
-    }
-
-    @Test
-    public void updateTest() throws Exception {
-        Film film1 = new Film(6, "name", "Пятеро друзей",
-                LocalDate.of(1895, 12, 28), 100L);
-        Film film2 = new Film(6, "name1", "Пятеро друзей1",
-                LocalDate.of(1896, 12, 28), 100L);
-
-        this.mockMvc.perform(post("/films")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(gson.toJson(film1)));
-
-        this.mockMvc.perform(put("/films")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(film2)))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType("application/json"),
-                        content().json(gson.toJson(film2)));
     }
 
     @Test

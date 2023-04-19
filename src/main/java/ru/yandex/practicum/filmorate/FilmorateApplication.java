@@ -7,6 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class FilmorateApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(FilmorateApplication.class, args);
+		SpringApplication application =
+				new SpringApplication(FilmorateApplication.class);
+		application.setAdditionalProfiles("development");
+		application.run(args);
 	}
 }

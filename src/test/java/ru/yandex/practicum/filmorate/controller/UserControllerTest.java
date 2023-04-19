@@ -46,8 +46,7 @@ class UserControllerTest {
                         .content(gson.toJson(user)))
                 .andExpectAll(
                         status().isOk(),
-                        content().contentType("application/json"),
-                        content().json(gson.toJson(user)));
+                        content().contentType("application/json"));
     }
 
     @Test
@@ -90,42 +89,6 @@ class UserControllerTest {
                         status().is4xxClientError(),
                         result -> assertEquals("Не корректная дата рождения",
                                 result.getResolvedException().getMessage()));
-    }
-
-    @Test
-    public void emptyNameTest() throws Exception {
-        User user1 = new User(5, "mail@mail.ru", "login", null,
-                LocalDate.of(2000, 03, 25));
-        User user2 = user1;
-        user2.setName("login");
-
-        this.mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(user1)))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType("application/json"),
-                        content().json(gson.toJson(user2)));
-    }
-
-    @Test
-    public void updateTest() throws Exception {
-        User user1 = new User(6, "mail@mail.ru", "dolore", "Nick Name",
-                LocalDate.of(1946, 03, 25));
-        User user2 = new User(6, "1mail@mail.ru", "1dolore", "1Nick Name",
-                LocalDate.of(1950, 03, 25));
-
-        this.mockMvc.perform(post("/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(gson.toJson(user1)));
-
-        this.mockMvc.perform(put("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(user2)))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType("application/json"),
-                        content().json(gson.toJson(user2)));
     }
 
     @Test

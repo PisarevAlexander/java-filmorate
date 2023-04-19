@@ -3,12 +3,13 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,53 +21,47 @@ public class UserController {
     private Map<Integer, User> users = new HashMap<>();
 
     @GetMapping
-    public Collection<User> findAll() {
-        return users.values();
+    public List<User> findAll() {
+        return new ArrayList<User>(users.values());
     }
 
     @PostMapping
     public User create(@RequestBody User user) {
-        if (validator(user) && !users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-            log.info("Добавлен новый пользователь: {}", user);
+        throwIfNotValid(user);
+        user.setId(id);
+        id++;
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
         }
+        users.put(user.getId(), user);
+        log.info("Добавлен новый пользователь: {}", user);
         return users.get(user.getId());
     }
 
     @PutMapping
     public User update(@RequestBody User user) {
-        if (validator(user) && users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-            log.info("Данные пользователя обновлены: {}", user);
-        } else {
+        throwIfNotValid(user);
+        if (!users.containsKey(user.getId())) {
             log.warn("Ошибка обновления: id {} не найден", user.getId());
             throw new NotFoundException("id " + user.getId() + "не найден");
         }
+        users.put(user.getId(), user);
+        log.info("Данные пользователя обновлены: {}", user);
         return users.get(user.getId());
     }
 
-    public boolean validator(User user) {
+    public void throwIfNotValid(User user) {
         if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             log.warn("Ошибка валидации: email {} не корректный", user.getEmail());
-            throw new ValidationException("Не корректный email");
+            throw new BadRequestException("Не корректный email");
         }
         if (user.getLogin().isBlank()) {
             log.warn("Ошибка валидации: login {} не корректный", user.getLogin());
-            throw new ValidationException("Не корректный логин");
+            throw new BadRequestException("Не корректный логин");
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
             log.warn("Ошибка валидации: birthday {} не корректный", user.getBirthday());
-            throw new ValidationException("Не корректная дата рождения");
+            throw new BadRequestException("Не корректная дата рождения");
         }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        if (user.getId() == 0) {
-            user.setId(id);
-            id++;
-        } else if (id == user.getId()) {
-            id++;
-        }
-        return true;
     }
 }
