@@ -11,15 +11,15 @@ import java.util.*;
 public class InMemoryUserStorage implements UserStorage {
 
     private int id = 1;
-    private Map<Integer, User> users = new HashMap<>();
+    private final Map<Integer, User> users = new HashMap<>();
 
     @Override
-    public List<User> findAllUsers() {
+    public List<User> findAll() {
         return new ArrayList<User>(users.values());
     }
 
     @Override
-    public Optional<User> findUserById(int userId) {
+    public Optional<User> findById(int userId) {
         return Optional.ofNullable(users.get(userId));
     }
 
@@ -35,10 +35,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> update(User user) {
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-        }
-        return Optional.ofNullable(users.get(user.getId()));
+    public User update(User user) {
+        users.put(user.getId(), user);
+        return users.get(user.getId());
     }
 }

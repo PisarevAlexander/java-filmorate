@@ -6,11 +6,11 @@ import java.util.Optional;
 
 public interface UserStorage {
 
-    List<User> findAllUsers();
+    List<User> findAll();
 
-    Optional<User> findUserById(int userId);
+    Optional<User> findById(int userId);
 
     User create(User user);
 
-    Optional<User> update(User user);
+    User update(User user);
 }

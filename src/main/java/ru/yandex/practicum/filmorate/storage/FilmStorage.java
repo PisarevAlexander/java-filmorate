@@ -6,13 +6,13 @@ import java.util.Optional;
 
 public interface FilmStorage {
 
-    List<Film> findAllFilm();
+    List<Film> findAll();
 
-    Optional<Film> findFilmById(int filmId);
+    Optional<Film> findById(int filmId);
 
-    List<Film> findTopFilms(int count);
+    List<Film> findTop(int count);
 
     Film create(Film film);
 
-    Optional<Film> update(Film film);
+    Film update(Film film);
 }

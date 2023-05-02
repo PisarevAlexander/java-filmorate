@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class UserControllerTest {
-    private Gson gson = new GsonBuilder()
+    private final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new FilmControllerTest.LocalDateAdapter())
             .create();
 
@@ -101,7 +101,7 @@ class UserControllerTest {
                         .content(gson.toJson(user)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("id " + user.getId() + "не найден",
+                        result -> assertEquals("id " + user.getId() + " не найден",
                                 result.getResolvedException().getMessage()));
     }
 

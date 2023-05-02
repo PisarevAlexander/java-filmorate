@@ -10,20 +10,20 @@ import java.util.stream.Collectors;
 public class InMemoryFilmStorage implements FilmStorage {
 
     private int id = 1;
-    private Map<Integer, Film> films = new HashMap<>();
+    private final Map<Integer, Film> films = new HashMap<>();
 
     @Override
-    public List<Film> findAllFilm() {
+    public List<Film> findAll() {
         return new ArrayList<Film>(films.values());
     }
 
     @Override
-    public Optional<Film> findFilmById(int filmId) {
+    public Optional<Film> findById(int filmId) {
         return Optional.ofNullable(films.get(filmId));
     }
 
     @Override
-    public List<Film> findTopFilms(int count) {
+    public List<Film> findTop(int count) {
         List<Film> topFilm = new ArrayList<Film>(films.values()).stream()
                 .sorted((f1, f2) -> Integer.compare(f2.getUserLikeFilm().size(), f1.getUserLikeFilm().size()))
                 .limit(count)
@@ -40,10 +40,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> update(Film film) {
-        if (films.containsKey(film.getId())) {
-            films.put(film.getId(), film);
-        }
-        return Optional.ofNullable(films.get(film.getId()));
+    public Film update(Film film) {
+        films.put(film.getId(), film);
+        return films.get(film.getId());
     }
 }

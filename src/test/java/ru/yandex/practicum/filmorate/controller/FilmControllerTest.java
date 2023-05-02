@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class FilmControllerTest {
-    private Gson gson = new GsonBuilder()
+    private final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
             .create();
 
@@ -123,7 +123,7 @@ class FilmControllerTest {
                         .content(gson.toJson(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("id " + film.getId() + "не найден",
+                        result -> assertEquals("id " + film.getId() + " не найден",
                                 result.getResolvedException().getMessage()));
     }
 }

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -13,29 +12,26 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
     @GetMapping
     public List<User> findAll() {
-        return userService.getAllUser();
+        return userService.getAll();
     }
 
     @GetMapping("/{id}")
     public User findUserById(@PathVariable("id") Integer userId) {
         if (userId < 1) {
-            log.warn("id = {} , а должен быть больше 0", userId);
             throw new NotFoundException("Переменная id должна быль больше 0");
         }
-        return userService.getUserById(userId);
+        return userService.getById(userId);
     }
 
     @GetMapping("/{id}/friends")
     public List<User> findUserFriends(@PathVariable("id") Integer userId) {
         if (userId < 1) {
-            log.warn("id = {} , а должен быть больше 0", userId);
             throw new NotFoundException("Переменная id должна быль больше 0");
         }
         return userService.getFriends(userId);
@@ -44,7 +40,6 @@ public class UserController {
     @GetMapping("{id}/friends/common/{otherId}")
     public List<User> findCommonFriends(@PathVariable("id") Integer userId, @PathVariable Integer otherId) {
         if (userId < 1 || otherId < 1) {
-            log.warn("id = {}, otherId = {} , а должны быть больше 0", userId, otherId);
             throw new NotFoundException("Переменные id и otherId должны быль больше 0");
         }
         return userService.getCommonFriends(userId, otherId);
@@ -65,7 +60,6 @@ public class UserController {
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable("id") Integer userId, @PathVariable Integer friendId) {
         if (userId < 1 || friendId < 1) {
-            log.warn("id = {}, friendId = {} , а должны быть больше 0", userId, friendId);
             throw new NotFoundException("Переменные id и friendId должны быль больше 0");
         }
         userService.addFriend(userId, friendId);
@@ -74,7 +68,6 @@ public class UserController {
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable("id") Integer userId, @PathVariable Integer friendId) {
         if (userId < 1 || friendId < 1) {
-            log.warn("id = {}, friendId = {} , а должны быть больше 0", userId, friendId);
             throw new NotFoundException("Переменные id и friendId должны быль больше 0");
         }
         userService.deleteFriend(userId, friendId);
@@ -82,15 +75,12 @@ public class UserController {
 
     public void throwIfNotValid(User user) {
         if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Ошибка валидации: email {} не корректный", user.getEmail());
             throw new BadRequestException("email");
         }
         if (user.getLogin().isBlank()) {
-            log.warn("Ошибка валидации: login {} не корректный", user.getLogin());
             throw new BadRequestException("login");
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Ошибка валидации: birthday {} не корректный", user.getBirthday());
             throw new BadRequestException("birthday");
         }
     }

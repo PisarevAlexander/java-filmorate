@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -23,106 +22,73 @@ public class UserService {
         return userStorage.create(user);
     }
 
-    public List<User> getAllUser() {
+    public List<User> getAll() {
         log.info("Получен список всех пользователей");
-        return userStorage.findAllUsers();
+        return userStorage.findAll();
     }
 
     public User update(User user) {
-        Optional<User> updatedUser = userStorage.update(user);
-        if (updatedUser.isEmpty()) {
-            log.warn("Ошибка обновления: id {} не найден", user.getId());
-            throw new NotFoundException("id " + user.getId() + "не найден");
-        }
+        userStorage.findById(user.getId())
+                .orElseThrow(() -> new NotFoundException("id " + user.getId() + " не найден"));
         log.info("Данные пользователя обновлены: {}", user);
-        return updatedUser.get();
+        return userStorage.update(user);
     }
 
-    public User getUserById(int id) {
-        Optional<User> user = userStorage.findUserById(id);
-        if (user.isEmpty()) {
-            log.warn("id " + id + "не найден");
-            throw new NotFoundException("id " + id + "не найден");
-        }
-        log.info("Запрос к пользователю с id: {}", id);
-        return user.get();
+    public User getById(int id) {
+        return userStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("id " + id + " не найден"));
     }
 
     public void addFriend(int userId, int friendId) {
-        Optional<User> user1 = userStorage.findUserById(userId);
-        Optional<User> user2 = userStorage.findUserById(friendId);
-        if (user1.isEmpty()) {
-            log.warn("id " + userId + "не найден");
-            throw new NotFoundException("id " + userId + "не найден");
-        } else if (user2.isEmpty()) {
-            log.warn("id " + friendId + "не найден");
-            throw new NotFoundException("id " + friendId + "не найден");
-        } else {
-        User user = user1.get();
-        User friend = user2.get();
-        user.addFriendId(friendId);
-        friend.addFriendId(userId);
-        userStorage.update(user);
-        userStorage.update(friend);
-        log.info("Пользователи: id {} и id {} теперь друзья", user.getId(), friend.getId());
-        }
+        User user1 = userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("id " + userId + " не найден"));
+        User user2 = userStorage.findById(friendId)
+                .orElseThrow(() -> new NotFoundException("id " + friendId + " не найден"));
+        user1.addFriendId(friendId);
+        user2.addFriendId(userId);
+        userStorage.update(user1);
+        userStorage.update(user2);
+        log.info("Пользователи: id {} и id {} теперь друзья", user1.getId(), user2.getId());
     }
 
     public void deleteFriend(int userId, int friendId) {
-        Optional<User> user1 = userStorage.findUserById(userId);
-        Optional<User> user2 = userStorage.findUserById(friendId);
-        if (user1.isEmpty()) {
-            log.warn("id " + userId + "не найден");
-            throw new NotFoundException("id " + userId + "не найден");
-        } else if (user2.isEmpty()) {
-            log.warn("id " + friendId + "не найден");
-            throw new NotFoundException("id " + friendId + "не найден");
-        } else {
-            User user = user1.get();
-            User friend = user2.get();
-            user.deleteFriendId(friendId);
-            friend.deleteFriendId(userId);
-            userStorage.update(user);
-            userStorage.update(friend);
-            log.info("Пользователи: id {} и id {} больше не друзья", user.getId(), friend.getId());
-        }
+        User user1 = userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("id " + userId + " не найден"));
+        User user2 = userStorage.findById(friendId)
+                .orElseThrow(() -> new NotFoundException("id " + friendId + " не найден"));
+        user1.deleteFriendId(friendId);
+        user2.deleteFriendId(userId);
+        userStorage.update(user1);
+        userStorage.update(user2);
+        log.info("Пользователи: id {} и id {} больше не друзья", user1.getId(), user2.getId());
     }
 
     public List<User> getFriends(int userId) {
         List<User> friends = new ArrayList<>();
-        Optional<User> user = userStorage.findUserById(userId);
-        if (user.isEmpty()) {
-            log.warn("id " + userId + "не найден");
-            throw new NotFoundException("id " + userId + "не найден");
-        }
-        Set<Integer> friendsId = user.get().getFriendsId();
+        User user = userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("id " + userId + " не найден"));
+        Set<Integer> friendsId = user.getFriendsId();
         for (Integer id : friendsId) {
-            friends.add(userStorage.findUserById(id).get());
+            friends.add(userStorage.findById(id).get());
         }
         return friends;
     }
 
     public List<User> getCommonFriends(int userId, int otherId) {
         List<User> friends = new ArrayList<>();
-        Optional<User> user1 = userStorage.findUserById(userId);
-        Optional<User> user2 = userStorage.findUserById(otherId);
-        if (user1.isEmpty()) {
-            log.warn("id " + userId + "не найден");
-            throw new NotFoundException("id " + userId + "не найден");
-        } else if (user2.isEmpty()) {
-            log.warn("id " + otherId + "не найден");
-            throw new NotFoundException("id " + otherId + "не найден");
-        } else {
-            Set<Integer> userFriends = user1.get().getFriendsId();
-            Set<Integer> otherFriends = user2.get().getFriendsId();
+        User user1 = userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("id " + userId + " не найден"));
+        User user2 = userStorage.findById(otherId)
+                .orElseThrow(() -> new NotFoundException("id " + otherId + " не найден"));
+            Set<Integer> userFriends = user1.getFriendsId();
+            Set<Integer> otherFriends = user2.getFriendsId();
             for (Integer userFriend : userFriends) {
                 for (Integer otherFriend : otherFriends) {
                     if (userFriend == otherFriend) {
-                        friends.add(userStorage.findUserById(userFriend).get());
+                        friends.add(userStorage.findById(userFriend).get());
                     }
                 }
             }
-        }
         return friends;
     }
 }

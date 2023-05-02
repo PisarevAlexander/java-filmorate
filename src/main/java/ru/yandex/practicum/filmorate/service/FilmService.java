@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -24,66 +23,44 @@ public class FilmService {
         return filmStorage.create(film);
     }
 
-    public List<Film> getAllFilm() {
+    public List<Film> getAll() {
         log.info("Получен список всех фильмов");
-        return filmStorage.findAllFilm();
+        return filmStorage.findAll();
     }
 
     public Film update(Film film) {
-        Optional<Film> updatedFilm = filmStorage.update(film);
-        if (updatedFilm.isEmpty()) {
-            log.warn("Ошибка обновления: id {} не найден", film.getId());
-            throw new NotFoundException("id " + film.getId() + "не найден");
-        }
+        filmStorage.findById(film.getId())
+                .orElseThrow(() -> new NotFoundException("id " + film.getId() + " не найден"));
         log.info("Данные фильма обновлены: {}", film);
-        return updatedFilm.get();
+        return filmStorage.update(film);
     }
 
-    public Film getFilmById(int id) {
-        Optional<Film> film = filmStorage.findFilmById(id);
-        if (film.isEmpty()) {
-            log.warn("id " + id + "не найден");
-            throw new NotFoundException("id " + id + "не найден");
-        }
-        log.info("Запрос к фильму с id: {}", id);
-        return film.get();
+    public Film getById(int id) {
+        return filmStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("id " + id + " не найден"));
     }
 
     public void addLike(int id, int userId) {
-        Optional<Film> film = filmStorage.findFilmById(id);
-        Optional<User> user = userStorage.findUserById(userId);
-        if (film.isEmpty()) {
-            log.warn("id " + id + "не найден");
-            throw new NotFoundException("id " + id + "не найден");
-        } else if (user.isEmpty()) {
-            log.warn("id " + userId + "не найден");
-            throw new NotFoundException("id " + userId + "не найден");
-        } else {
-            Film likedFilm = film.get();
-            likedFilm.addUserId(user.get().getId());
-            filmStorage.update(likedFilm);
-            log.info("Пользователю id: {} понравился фильм с id: {}", userId, id);
-        }
+        Film film = filmStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("id " + id + " не найден"));
+        User user = userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("id " + userId + " не найден"));
+        film.addUserId(user.getId());
+        filmStorage.update(film);
+        log.info("Пользователю id: {} понравился фильм с id: {}", userId, id);
     }
 
     public void deleteLike(int id, int userId) {
-        Optional<Film> film = filmStorage.findFilmById(id);
-        Optional<User> user = userStorage.findUserById(userId);
-        if (film.isEmpty()) {
-            log.warn("id " + id + "не найден");
-            throw new NotFoundException("id " + id + "не найден");
-        } else if (user.isEmpty()) {
-            log.warn("id " + userId + "не найден");
-            throw new NotFoundException("id " + userId + "не найден");
-        } else {
-            Film unlikedFilm = film.get();
-            unlikedFilm.deleteUserId(user.get().getId());
-            filmStorage.update(unlikedFilm);
-            log.info("Пользователю id: {} больше не нравиться фильм с id: {}", userId, id);
-        }
+        Film film = filmStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("id " + id + " не найден"));
+        User user = userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("id " + userId + " не найден"));
+        film.deleteUserId(user.getId());
+        filmStorage.update(film);
+        log.info("Пользователю id: {} больше не нравиться фильм с id: {}", userId, id);
     }
 
-    public List<Film> getTopFilms(int count) {
-        return filmStorage.findTopFilms(count);
+    public List<Film> getTop(int count) {
+        return filmStorage.findTop(count);
     }
 }
