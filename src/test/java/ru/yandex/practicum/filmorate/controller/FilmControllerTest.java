@@ -14,16 +14,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class FilmControllerTest {
-    private Gson gson = new GsonBuilder()
+    private final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
             .create();
 
@@ -67,11 +64,11 @@ class FilmControllerTest {
 
         this.mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
                         .content(gson.toJson(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("Описание не должно быть длиннее 200 символов",
-                                result.getResolvedException().getMessage()));
+                        content().string("{\"error\":\"Ошибка с полем \\\"description\\\".\"}"));
     }
 
     @Test
@@ -81,11 +78,11 @@ class FilmControllerTest {
 
         this.mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
                         .content(gson.toJson(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("Название не может быть пустым",
-                                result.getResolvedException().getMessage()));
+                        content().string("{\"error\":\"Ошибка с полем \\\"name\\\".\"}"));
     }
 
     @Test
@@ -95,11 +92,11 @@ class FilmControllerTest {
 
         this.mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
                         .content(gson.toJson(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("Дата релиза не может быть раньше 1895-12-28",
-                                result.getResolvedException().getMessage()));
+                        content().string("{\"error\":\"Ошибка с полем \\\"releaseDate\\\".\"}"));
     }
 
     @Test
@@ -109,11 +106,11 @@ class FilmControllerTest {
 
         this.mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
                         .content(gson.toJson(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("Продолжительность фильма должна быть больше 0",
-                                result.getResolvedException().getMessage()));
+                        content().string("{\"error\":\"Ошибка с полем \\\"duration\\\".\"}"));
     }
 
     @Test
@@ -126,7 +123,7 @@ class FilmControllerTest {
                         .content(gson.toJson(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("id " + film.getId() + "не найден",
+                        result -> assertEquals("id " + film.getId() + " не найден",
                                 result.getResolvedException().getMessage()));
     }
 }

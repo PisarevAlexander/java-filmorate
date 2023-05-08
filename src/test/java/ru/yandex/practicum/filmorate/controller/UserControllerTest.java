@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class UserControllerTest {
-    private Gson gson = new GsonBuilder()
+    private final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new FilmControllerTest.LocalDateAdapter())
             .create();
 
@@ -56,11 +56,11 @@ class UserControllerTest {
 
         this.mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
                         .content(gson.toJson(user)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("Не корректный email",
-                                result.getResolvedException().getMessage()));
+                        content().string("{\"error\":\"Ошибка с полем \\\"email\\\".\"}"));
     }
 
     @Test
@@ -70,11 +70,11 @@ class UserControllerTest {
 
         this.mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
                         .content(gson.toJson(user)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("Не корректный логин",
-                                result.getResolvedException().getMessage()));
+                        content().string("{\"error\":\"Ошибка с полем \\\"login\\\".\"}"));
     }
 
     @Test
@@ -84,11 +84,11 @@ class UserControllerTest {
 
         this.mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
                         .content(gson.toJson(user)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("Не корректная дата рождения",
-                                result.getResolvedException().getMessage()));
+                        content().string("{\"error\":\"Ошибка с полем \\\"birthday\\\".\"}"));
     }
 
     @Test
@@ -101,7 +101,7 @@ class UserControllerTest {
                         .content(gson.toJson(user)))
                 .andExpectAll(
                         status().is4xxClientError(),
-                        result -> assertEquals("id " + user.getId() + "не найден",
+                        result -> assertEquals("id " + user.getId() + " не найден",
                                 result.getResolvedException().getMessage()));
     }
 
