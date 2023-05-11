@@ -5,6 +5,8 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -16,8 +18,10 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private Long duration;
+    private RatingMPA ratingMPA;
 
     private final Set<Integer> userLikeFilm = new TreeSet<>();
+    private final List<FilmGenre> genres = new ArrayList<>();
 
     public void addUserId(int friendId) {
         userLikeFilm.add(friendId);
