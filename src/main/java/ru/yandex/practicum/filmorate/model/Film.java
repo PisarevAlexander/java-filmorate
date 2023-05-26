@@ -13,7 +13,6 @@ import java.time.LocalDate;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 @Data
 public class Film {
@@ -38,7 +37,7 @@ public class Film {
         this.duration = duration;
         this.mpa = mpa;
         userLikeFilm = new LinkedHashSet<>();
-        genres = new TreeSet<>();
+        genres = new LinkedHashSet<>();
     }
 
     public void addUserId(int userId) {
