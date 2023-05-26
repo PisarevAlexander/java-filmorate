@@ -100,7 +100,8 @@ public class FilmorateTest {
     public void updateFilmTest() {
         filmStorage.create(firstFilm);
         firstFilm.setDescription("updated");
-        Film film = filmStorage.update(firstFilm);
+        filmStorage.update(firstFilm);
+        Film film = filmStorage.findById(firstFilm.getId()).get();
 
         assertEquals(firstFilm.getId(), film.getId());
         assertEquals(firstFilm.getName(), film.getName());
@@ -134,7 +135,8 @@ public class FilmorateTest {
     public void updateUserTest() {
         userStorage.create(firstUser);
         firstUser.setName("updated");
-        User user = userStorage.update(firstUser);
+        userStorage.update(firstUser);
+        User user = userStorage.findById(firstUser.getId()).get();
 
         assertEquals(user.getId(), firstUser.getId());
         assertEquals(user.getName(), firstUser.getName());
