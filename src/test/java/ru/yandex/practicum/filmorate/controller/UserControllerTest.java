@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import com.google.gson.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +25,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserControllerTest {
-    private final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(LocalDate.class, new FilmControllerTest.LocalDateAdapter())
-            .create();
 
     @Autowired
     private MockMvc mockMvc;
+    ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void getUserTest() throws Exception {
@@ -47,7 +45,7 @@ class UserControllerTest {
 
         this.mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(user)))
+                        .content(mapper.writeValueAsString(user)))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType("application/json"));
@@ -61,7 +59,7 @@ class UserControllerTest {
         this.mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-                        .content(gson.toJson(user)))
+                        .content(mapper.writeValueAsString(user)))
                 .andExpectAll(
                         status().is4xxClientError(),
                         content().string("{\"error\":\"Ошибка с полем \\\"email\\\".\"}"));
@@ -75,7 +73,7 @@ class UserControllerTest {
         this.mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-                        .content(gson.toJson(user)))
+                        .content(mapper.writeValueAsString(user)))
                 .andExpectAll(
                         status().is4xxClientError(),
                         content().string("{\"error\":\"Ошибка с полем \\\"login\\\".\"}"));
@@ -89,7 +87,7 @@ class UserControllerTest {
         this.mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-                        .content(gson.toJson(user)))
+                        .content(mapper.writeValueAsString(user)))
                 .andExpectAll(
                         status().is4xxClientError(),
                         content().string("{\"error\":\"Ошибка с полем \\\"birthday\\\".\"}"));
@@ -102,11 +100,10 @@ class UserControllerTest {
 
         this.mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(user)))
+                        .content(mapper.writeValueAsString(user)))
                 .andExpectAll(
                         status().is4xxClientError(),
                         result -> assertEquals("id " + user.getId() + " не найден",
                                 result.getResolvedException().getMessage()));
     }
-
 }

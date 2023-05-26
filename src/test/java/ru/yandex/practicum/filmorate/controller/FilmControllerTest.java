@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import com.google.gson.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,32 +12,22 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.enums.Mpa;
 
-import java.lang.reflect.Type;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @AutoConfigureMockMvc
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmControllerTest {
-    private final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
-            .create();
-
-    static class LocalDateAdapter implements JsonSerializer<LocalDate> {
-        public JsonElement serialize(LocalDate date, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(date.format(DateTimeFormatter.ISO_LOCAL_DATE));
-        }
-    }
 
     @Autowired
     private MockMvc mockMvc;
-
+    ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void getFilmsTest() throws Exception {
@@ -54,7 +44,7 @@ class FilmControllerTest {
 
         this.mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(film)))
+                        .content(mapper.writeValueAsString(film)))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType("application/json"));
@@ -70,7 +60,7 @@ class FilmControllerTest {
         this.mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-                        .content(gson.toJson(film)))
+                        .content(mapper.writeValueAsString(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
                         content().string("{\"error\":\"Ошибка с полем \\\"description\\\".\"}"));
@@ -84,7 +74,7 @@ class FilmControllerTest {
         this.mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-                        .content(gson.toJson(film)))
+                        .content(mapper.writeValueAsString(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
                         content().string("{\"error\":\"Ошибка с полем \\\"name\\\".\"}"));
@@ -98,7 +88,7 @@ class FilmControllerTest {
         this.mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-                        .content(gson.toJson(film)))
+                        .content(mapper.writeValueAsString(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
                         content().string("{\"error\":\"Ошибка с полем \\\"releaseDate\\\".\"}"));
@@ -112,7 +102,7 @@ class FilmControllerTest {
         this.mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-                        .content(gson.toJson(film)))
+                        .content(mapper.writeValueAsString(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
                         content().string("{\"error\":\"Ошибка с полем \\\"duration\\\".\"}"));
@@ -125,7 +115,7 @@ class FilmControllerTest {
 
         this.mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(film)))
+                        .content(mapper.writeValueAsString(film)))
                 .andExpectAll(
                         status().is4xxClientError(),
                         result -> assertEquals("id " + film.getId() + " не найден",
