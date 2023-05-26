@@ -24,11 +24,11 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> findAll() {
         List<Film> films = jdbcTemplate.query("select f.film_id, f.name, f.description, f.release_date, " +
-                "f.duration, r.rating from films as f left join mpa_rating as r on f.rating_id = r.rating_id",
+                        "f.duration, r.rating from films as f left join mpa_rating as r on f.rating_id = r.rating_id",
                 (rs, rowNum) -> new Film(
-                rs.getInt("film_id"), rs.getString("name"),
-                rs.getString("description"), rs.getDate("release_date").toLocalDate(),
-                rs.getLong("duration"), Mpa.valueOf(rs.getString("rating"))));
+                        rs.getInt("film_id"), rs.getString("name"),
+                        rs.getString("description"), rs.getDate("release_date").toLocalDate(),
+                        rs.getLong("duration"), Mpa.valueOf(rs.getString("rating"))));
         for (Film film : films) {
             SqlRowSet genres = jdbcTemplate.queryForRowSet("select g.genre from films_genre as f join genres as g on " +
                             "f.genre_id = g.genre_id where film_id = ?",
@@ -37,8 +37,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.addGenre(FilmGenre.valueOf(genres.getString("genre")));
             }
         }
-        films = findLikedUsers(films);
-        return films;
+        return findLikedUsers(films);
     }
 
     @Override
@@ -77,8 +76,7 @@ public class FilmDbStorage implements FilmStorage {
                 rs.getInt("film_id"), rs.getString("name"),
                 rs.getString("description"), rs.getDate("release_date").toLocalDate(),
                 rs.getLong("duration"), Mpa.valueOf(rs.getString("rating"))), count);
-        films = findLikedUsers(films);
-        return films;
+        return findLikedUsers(films);
     }
 
     @Override
@@ -97,11 +95,7 @@ public class FilmDbStorage implements FilmStorage {
         }, keyHolder);
         film.setId(keyHolder.getKey().intValue());
         if (!film.getGenres().isEmpty()) {
-            Set<FilmGenre> genres = film.getGenres();
-            for (FilmGenre genre : genres) {
-                jdbcTemplate.update("insert into films_genre(film_id, genre_id) values (?, ?)",
-                        keyHolder.getKey().intValue(), genre.getId());
-            }
+            setGenres(film);
         }
         return film;
     }
@@ -116,16 +110,13 @@ public class FilmDbStorage implements FilmStorage {
             jdbcTemplate.update("delete users_liked_films where film_id = ?", film.getId());
             Set<Integer> likedUsers = film.getUserLikeFilm();
             for (Integer likedUser : likedUsers) {
-                jdbcTemplate.update("insert into users_liked_films(film_id, user_id) values (?, ?)", film.getId(), likedUser);
+                jdbcTemplate.update("insert into users_liked_films(film_id, user_id) values (?, ?)",
+                        film.getId(), likedUser);
             }
         }
         jdbcTemplate.update("delete films_genre where film_id = ?", film.getId());
         if (!film.getGenres().isEmpty()) {
-            Set<FilmGenre> genres = film.getGenres();
-            for (FilmGenre genre : genres) {
-                jdbcTemplate.update("insert into films_genre(film_id, genre_id) values (?, ?)",
-                        film.getId(), genre.getId());
-            }
+            setGenres(film);
         }
         return film;
     }
@@ -139,5 +130,13 @@ public class FilmDbStorage implements FilmStorage {
             }
         }
         return films;
+    }
+
+    private void setGenres(Film film) {
+        Set<FilmGenre> genres = film.getGenres();
+        for (FilmGenre genre : genres) {
+            jdbcTemplate.update("insert into films_genre(film_id, genre_id) values (?, ?)",
+                    film.getId(), genre.getId());
+        }
     }
 }
