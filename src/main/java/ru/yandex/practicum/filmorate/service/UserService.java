@@ -2,21 +2,23 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.FriendStatus;
+import ru.yandex.practicum.filmorate.model.enums.FriendStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
+
+    @Qualifier("DBUsers")
     private final UserStorage userStorage;
 
     public User create(User user) {
@@ -49,13 +51,13 @@ public class UserService {
         Map<Integer, FriendStatus> firstUserFriends = user1.getFriends();
         Map<Integer, FriendStatus> secondUserFriends = user2.getFriends();
         if (!firstUserFriends.containsKey(friendId) && !secondUserFriends.containsKey(userId)) {
-            firstUserFriends.put(friendId, FriendStatus.NOT_CONFIRMED);
+            user1.addFriend(friendId, FriendStatus.NOT_CONFIRMED);
             userStorage.update(user1);
             log.info("Пользователи: id {} направил заявку в друзья пользователю с id {}", user1.getId(), user2.getId());
         }
         if (!firstUserFriends.containsKey(friendId) && secondUserFriends.containsKey(userId)) {
-            firstUserFriends.put(friendId, FriendStatus.CONFIRMED);
-            secondUserFriends.put(userId, FriendStatus.CONFIRMED);
+            user1.addFriend(friendId, FriendStatus.CONFIRMED);
+            user2.addFriend(userId, FriendStatus.CONFIRMED);
             userStorage.update(user1);
             userStorage.update(user2);
             log.info("Пользователи: id {} и id {} теперь друзья", user1.getId(), user2.getId());
@@ -80,9 +82,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("id " + userId + " не найден"));
         Map<Integer, FriendStatus> userFriends = user.getFriends();
         for (Integer id : userFriends.keySet()) {
-            if (userFriends.get(id) == FriendStatus.CONFIRMED) {
                 friends.add(userStorage.findById(id).get());
-            }
         }
         return friends;
     }

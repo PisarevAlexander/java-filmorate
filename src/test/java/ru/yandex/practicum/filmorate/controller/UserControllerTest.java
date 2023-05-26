@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import com.google.gson.*;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -19,7 +21,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @SpringBootTest
+@AutoConfigureTestDatabase
 @AutoConfigureMockMvc
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserControllerTest {
     private final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new FilmControllerTest.LocalDateAdapter())
