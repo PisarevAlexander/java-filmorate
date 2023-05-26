@@ -78,7 +78,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User update(User user) {
+    public void update(User user) {
         String sqlQuery = "update users set email = ?, login = ?, name = ?, birthday = ? where user_id = ?";
         jdbcTemplate.update(sqlQuery, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
         jdbcTemplate.update("delete friends where user_id = ?", user.getId());
@@ -89,6 +89,5 @@ public class UserDbStorage implements UserStorage {
                         user.getId(), friend, friends.get(friend).ordinal() + 1);
             }
         }
-        return user;
     }
 }

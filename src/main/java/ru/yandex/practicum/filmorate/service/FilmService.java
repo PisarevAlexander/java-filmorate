@@ -37,7 +37,9 @@ public class FilmService {
         filmStorage.findById(film.getId())
                 .orElseThrow(() -> new NotFoundException("id " + film.getId() + " не найден"));
         log.info("Данные фильма обновлены: {}", film);
-        return filmStorage.update(film);
+        filmStorage.update(film);
+        return filmStorage.findById(film.getId())
+                .orElseThrow(() -> new NotFoundException("id " + film.getId() + " не найден"));
     }
 
     public Film getById(int id) {

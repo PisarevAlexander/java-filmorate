@@ -101,7 +101,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film update(Film film) {
+    public void update(Film film) {
         String sqlQuery = "update films set name = ?, description = ?, release_date = ?, duration = ?, " +
                 "rating_id = ? where film_id = ?";
         jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
@@ -118,7 +118,6 @@ public class FilmDbStorage implements FilmStorage {
         if (!film.getGenres().isEmpty()) {
             setGenres(film);
         }
-        return film;
     }
 
     private List<Film> findLikedUsers(List<Film> films) {

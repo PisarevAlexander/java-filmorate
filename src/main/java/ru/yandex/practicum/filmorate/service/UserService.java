@@ -34,8 +34,10 @@ public class UserService {
     public User update(User user) {
         userStorage.findById(user.getId())
                 .orElseThrow(() -> new NotFoundException("id " + user.getId() + " не найден"));
+        userStorage.update(user);
         log.info("Данные пользователя обновлены: {}", user);
-        return userStorage.update(user);
+        return userStorage.findById(user.getId())
+                .orElseThrow(() -> new NotFoundException("id " + user.getId() + " не найден"));
     }
 
     public User getById(int id) {
