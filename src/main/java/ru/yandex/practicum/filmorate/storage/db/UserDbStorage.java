@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -12,6 +13,8 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,13 +27,12 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> findAll() {
-        List<User> users = jdbcTemplate.query("select * from users", (rs, rowNum) -> new User(
-                rs.getInt("user_id"), rs.getString("email"),
-                rs.getString("login"), rs.getString("name"),
-                rs.getDate("birthday").toLocalDate()));
+        List<User> users = jdbcTemplate.query("SELECT * FROM users", (rs, rowNum) -> makeUser(rs));
         for (User user : users) {
-            SqlRowSet friendsRows = jdbcTemplate.queryForRowSet("select fr.friend_id, s.status from friends as fr " +
-                    "join friend_status as s on fr.status_id = s.status_id where fr.user_id = ?", user.getId());
+            SqlRowSet friendsRows = jdbcTemplate.queryForRowSet("SELECT fr.friend_id, s.status " +
+                    "FROM friends AS fr " +
+                    "JOIN friend_status AS s ON fr.status_id = s.status_id " +
+                    "WHERE fr.user_id = ?", user.getId());
             while (friendsRows.next()) {
                 user.addFriend(friendsRows.getInt("friend_id"),
                         FriendStatus.valueOf(friendsRows.getString("status")));
@@ -41,19 +43,19 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Optional<User> findById(int userId) {
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet("select * from users where user_id = ?", userId);
-        if (userRows.next()) {
-            User user = new User(userRows.getInt("user_id"), userRows.getString("email"),
-                    userRows.getString("login"), userRows.getString("name"),
-                    userRows.getDate("birthday").toLocalDate());
-            SqlRowSet friendsRows = jdbcTemplate.queryForRowSet("select fr.friend_id, s.status from friends as fr " +
-                    "join friend_status as s on fr.status_id = s.status_id where fr.user_id = ?", userId);
+        try {
+        User user = jdbcTemplate.queryForObject("SELECT * FROM users WHERE user_id = ?",
+                ((rs, rowNum) -> makeUser(rs)), userId);
+            SqlRowSet friendsRows = jdbcTemplate.queryForRowSet("SELECT fr.friend_id, s.status " +
+                    "FROM friends as fr " +
+                    "JOIN friend_status AS s ON fr.status_id = s.status_id " +
+                    "WHERE fr.user_id = ?", userId);
             while (friendsRows.next()) {
                 user.addFriend(friendsRows.getInt("friend_id"),
                         FriendStatus.valueOf(friendsRows.getString("status")));
             }
             return Optional.of(user);
-        } else {
+        } catch (DataAccessException exception) {
             return Optional.empty();
         }
     }
@@ -63,7 +65,7 @@ public class UserDbStorage implements UserStorage {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        String sqlQuery = "insert into users(email, login, name, birthday) values (?, ?, ?, ?)";
+        String sqlQuery = "INSERT INTO users(email, login, name, birthday) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"user_id"});
@@ -79,15 +81,20 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void update(User user) {
-        String sqlQuery = "update users set email = ?, login = ?, name = ?, birthday = ? where user_id = ?";
+        String sqlQuery = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
         jdbcTemplate.update(sqlQuery, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
-        jdbcTemplate.update("delete friends where user_id = ?", user.getId());
+        jdbcTemplate.update("DELETE friends WHERE user_id = ?", user.getId());
         if (!user.getFriends().isEmpty()) {
             Map<Integer, FriendStatus> friends = user.getFriends();
             for (Integer friend : friends.keySet()) {
-                jdbcTemplate.update("insert into friends(user_id, friend_id, status_id) values (?, ?, ?)",
+                jdbcTemplate.update("INSERT INTO friends(user_id, friend_id, status_id) VALUES (?, ?, ?)",
                         user.getId(), friend, friends.get(friend).ordinal() + 1);
             }
         }
+    }
+
+    private User makeUser(ResultSet rs) throws SQLException {
+        return new User(rs.getInt("user_id"), rs.getString("email"), rs.getString("login"),
+                rs.getString("name"), rs.getDate("birthday").toLocalDate());
     }
 }

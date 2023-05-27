@@ -15,13 +15,13 @@ public class GenreDbStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public List<FilmGenre> findAll() {
-        List<FilmGenre> genres = jdbcTemplate.query("select genre from genres", (rs, rowNum) ->
+        List<FilmGenre> genres = jdbcTemplate.query("SELECT genre FROM genres", (rs, rowNum) ->
                 FilmGenre.valueOf(rs.getString("genre")));
       return genres;
     }
 
     public Optional<FilmGenre> findById(int id) {
-        SqlRowSet genresRow = jdbcTemplate.queryForRowSet("select genre from genres where genre_id = ?", id);
+        SqlRowSet genresRow = jdbcTemplate.queryForRowSet("SELECT genre FROM genres WHERE genre_id = ?", id);
         if (genresRow.next()) {
             return Optional.of(FilmGenre.valueOf(genresRow.getString("genre")));
         } else {

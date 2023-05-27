@@ -16,13 +16,13 @@ public class MpaDbStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public List<Mpa> findAll() {
-        List<Mpa> mpas = jdbcTemplate.query("select rating from mpa_rating", (rs, rowNum) ->
+        List<Mpa> mpas = jdbcTemplate.query("SELECT rating FROM mpa_rating", (rs, rowNum) ->
                 Mpa.valueOf(rs.getString("rating")));
         return mpas;
     }
 
     public Optional<Mpa> findById(int id) {
-        SqlRowSet mpasRow = jdbcTemplate.queryForRowSet("select rating from mpa_rating where rating_id = ?", id);
+        SqlRowSet mpasRow = jdbcTemplate.queryForRowSet("SELECT rating FROM mpa_rating WHERE rating_id = ?", id);
         if (mpasRow.next()) {
             return Optional.of(Mpa.valueOf(mpasRow.getString("rating")));
         } else {
