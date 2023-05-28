@@ -7,10 +7,15 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.FilmGenre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.db.GenreDbStorage;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -22,6 +27,7 @@ public class FilmService {
 
     @Qualifier("DBUsers")
     private final UserStorage userStorage;
+    private final GenreDbStorage genreDbStorage;
 
     public Film create(Film film) {
         log.info("Добавлен новый фильм: {}", film);
@@ -29,8 +35,21 @@ public class FilmService {
     }
 
     public List<Film> getAll() {
+        List<Film> films =filmStorage.findAll();
+        Map<Integer, Film> mapFilms = films.stream()
+                .collect(Collectors.toMap(Film::getId, Function.identity()));
+        List<Map<String, Object>> genres = genreDbStorage.findGenreByFilms();
+        List<Map<String, Object>> likedUsers = userStorage.findUsersLikedFilms();
+        for (Map<String, Object> genre : genres) {
+            mapFilms.get(Integer.parseInt(genre.get("FILM_ID").toString())).getGenres()
+                    .add(FilmGenre.valueOf(genre.get("GENRE").toString()));
+        }
+        for (Map<String, Object> likedUser : likedUsers) {
+            mapFilms.get(Integer.parseInt(likedUser.get("FILM_ID").toString())).getUserLikeFilm()
+                    .add(Integer.parseInt(likedUser.get("USER_ID").toString()));
+        }
         log.info("Получен список всех фильмов");
-        return filmStorage.findAll();
+        return films;
     }
 
     public Film update(Film film) {

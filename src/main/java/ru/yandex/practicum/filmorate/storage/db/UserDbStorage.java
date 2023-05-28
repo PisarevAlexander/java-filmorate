@@ -93,6 +93,11 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
+    @Override
+    public List<Map<String, Object>> findUsersLikedFilms() {
+        return jdbcTemplate.queryForList("SELECT * FROM users_liked_films");
+    }
+
     private User makeUser(ResultSet rs) throws SQLException {
         return new User(rs.getInt("user_id"), rs.getString("email"), rs.getString("login"),
                 rs.getString("name"), rs.getDate("birthday").toLocalDate());

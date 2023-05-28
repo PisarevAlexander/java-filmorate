@@ -37,4 +37,9 @@ public class InMemoryUserStorage implements UserStorage {
     public void update(User user) {
         users.put(user.getId(), user);
     }
+
+    @Override
+    public List<Map<String, Object>> findUsersLikedFilms() {
+        return List.of();
+    }
 }

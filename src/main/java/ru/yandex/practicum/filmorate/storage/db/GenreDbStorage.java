@@ -28,4 +28,10 @@ public class GenreDbStorage {
             return Optional.empty();
         }
     }
+
+    public List<Map<String, Object>> findGenreByFilms() {
+        return jdbcTemplate.queryForList("SELECT f.film_id, g.genre " +
+                "FROM films_genre AS f " +
+                "JOIN genres AS g ON f.genre_id = g.genre_id");
+    }
 }

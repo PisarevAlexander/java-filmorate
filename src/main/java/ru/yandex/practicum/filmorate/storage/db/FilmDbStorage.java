@@ -15,8 +15,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Repository("DBFilms")
 @RequiredArgsConstructor
@@ -31,20 +29,6 @@ public class FilmDbStorage implements FilmStorage {
                         "FROM films AS f " +
                         "LEFT JOIN mpa_rating AS r ON f.rating_id = r.rating_id",
                 (rs, rowNum) -> makeFilm(rs));
-        List<Map<String, Object>> genres = jdbcTemplate.queryForList("SELECT f.film_id, g.genre " +
-                "FROM films_genre AS f " +
-                "JOIN genres AS g ON f.genre_id = g.genre_id");
-        List<Map<String, Object>> likedUsers = jdbcTemplate.queryForList("SELECT * FROM users_liked_films");
-        Map<Integer, Film> mapFilms = films.stream()
-                .collect(Collectors.toMap(Film::getId, Function.identity()));
-        for (Map<String, Object> genre : genres) {
-            mapFilms.get(Integer.parseInt(genre.get("FILM_ID").toString())).getGenres()
-                    .add(FilmGenre.valueOf(genre.get("GENRE").toString()));
-        }
-        for (Map<String, Object> likedUser : likedUsers) {
-            mapFilms.get(Integer.parseInt(likedUser.get("FILM_ID").toString())).getUserLikeFilm()
-                    .add(Integer.parseInt(likedUser.get("USER_ID").toString()));
-        }
         return films;
     }
 
