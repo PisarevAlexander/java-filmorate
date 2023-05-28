@@ -35,7 +35,7 @@ public class FilmService {
     }
 
     public List<Film> getAll() {
-        List<Film> films =filmStorage.findAll();
+        List<Film> films = filmStorage.findAll();
         Map<Integer, Film> mapFilms = films.stream()
                 .collect(Collectors.toMap(Film::getId, Function.identity()));
         List<Map<String, Object>> genres = genreDbStorage.findGenreByFilms();
