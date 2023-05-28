@@ -1,13 +1,12 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.memory;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
 
-@Component
-@Slf4j
+@Component("InMemoryUsers")
 public class InMemoryUserStorage implements UserStorage {
 
     private int id = 1;
@@ -35,8 +34,30 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User update(User user) {
+    public void update(User user) {
         users.put(user.getId(), user);
-        return users.get(user.getId());
+    }
+
+    @Override
+    public List<Map<String, Object>> findUsersLikedFilms() {
+        return List.of();
+    }
+
+    @Override
+    public List<Map<String, Object>> findUsersLikedFilmsById(int id) {
+        return List.of();
+    }
+
+    @Override
+    public List<Map<String, Object>> findUsersLikedFilmsForTopFilms(int count) {
+        return List.of();
+    }
+
+    @Override
+    public void deleteUsersLikedFilms(int filmId) {
+    }
+
+    @Override
+    public void addUsersLikedFilms(int filmId, int userId) {
     }
 }

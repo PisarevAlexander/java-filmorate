@@ -1,0 +1,64 @@
+CREATE TABLE IF NOT EXISTS public.users (
+	user_id  BIGINT       NOT NULL AUTO_INCREMENT,
+	email    VARCHAR(255) NOT NULL,
+	login    VARCHAR(255) NOT NULL,
+	name     VARCHAR(255),
+	birthday DATE         NOT NULL,
+	CONSTRAINT USERS_PK PRIMARY KEY (user_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.friend_status (
+	status_id INTEGER      NOT NULL AUTO_INCREMENT,
+	status    VARCHAR(50) NOT NULL,
+	CONSTRAINT FRIEND_STATUS_PK PRIMARY KEY (status_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.friends (
+	id        BIGINT  NOT NULL AUTO_INCREMENT,
+	user_id   BIGINT  NOT NULL,
+	friend_id BIGINT  NOT NULL,
+	status_id INTEGER NOT NULL,
+	CONSTRAINT FRIENDS_PK PRIMARY KEY (id),
+	CONSTRAINT FRIENDS_FK FOREIGN KEY (user_id) REFERENCES public.users(user_id),
+	CONSTRAINT FRIENDS_FK_1 FOREIGN KEY (friend_id) REFERENCES public.users(user_id),
+	CONSTRAINT FRIENDS_FK_2 FOREIGN KEY (status_id) REFERENCES public.friend_status(status_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.genres (
+	genre_id INTEGER      NOT NULL AUTO_INCREMENT,
+	genre    VARCHAR(50)  NOT NULL,
+	CONSTRAINT GENRES_PK PRIMARY KEY (genre_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.mpa_rating (
+	rating_id INTEGER      NOT NULL AUTO_INCREMENT,
+	rating    VARCHAR(10)  NOT NULL,
+	CONSTRAINT MPA_RATING_PK PRIMARY KEY (rating_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.films (
+	film_id      BIGINT        NOT NULL AUTO_INCREMENT,
+	name         VARCHAR(255)  NOT NULL,
+	description  VARCHAR(2000) NOT NULL,
+	release_date DATE          NOT NULL,
+	duration     INTEGER       NOT NULL,
+	rating_id    INTEGER,
+	CONSTRAINT FILMS_PK PRIMARY KEY (film_id),
+	CONSTRAINT FILMS_FK FOREIGN KEY (rating_id) REFERENCES public.mpa_rating(rating_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.films_genre (
+	film_id  BIGINT  NOT NULL,
+	genre_id INTEGER NOT NULL,
+	CONSTRAINT FILMS_GENRE_PK PRIMARY KEY (film_id,genre_id),
+	CONSTRAINT FILMS_GENRE_FK FOREIGN KEY (film_id) REFERENCES public.films(film_id),
+	CONSTRAINT FILMS_GENRE_FK_1 FOREIGN KEY (genre_id) REFERENCES public.genres(genre_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.users_liked_films (
+	film_id INTEGER NOT NULL,
+	user_id INTEGER NOT NULL,
+	CONSTRAINT USERS_LIKED_FILMS_PK PRIMARY KEY (film_id,user_id),
+	CONSTRAINT USERS_LIKED_FILMS_FK FOREIGN KEY (user_id) REFERENCES public.users(USER_ID),
+	CONSTRAINT USERS_LIKED_FILMS_FK_1 FOREIGN KEY (film_id) REFERENCES public.films(FILM_ID)
+);
