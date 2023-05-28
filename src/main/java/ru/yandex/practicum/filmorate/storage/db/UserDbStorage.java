@@ -44,8 +44,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Optional<User> findById(int userId) {
         try {
-        User user = jdbcTemplate.queryForObject("SELECT * FROM users WHERE user_id = ?",
-                ((rs, rowNum) -> makeUser(rs)), userId);
+            User user = jdbcTemplate.queryForObject("SELECT * FROM users WHERE user_id = ?",
+                    ((rs, rowNum) -> makeUser(rs)), userId);
             SqlRowSet friendsRows = jdbcTemplate.queryForRowSet("SELECT fr.friend_id, s.status " +
                     "FROM friends as fr " +
                     "JOIN friend_status AS s ON fr.status_id = s.status_id " +
@@ -96,6 +96,37 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<Map<String, Object>> findUsersLikedFilms() {
         return jdbcTemplate.queryForList("SELECT * FROM users_liked_films");
+    }
+
+    @Override
+    public List<Map<String, Object>> findUsersLikedFilmsById(int id) {
+        return jdbcTemplate.queryForList("SELECT * " +
+                "FROM users_liked_films " +
+                "WHERE film_id = ?", id);
+    }
+
+    @Override
+    public List<Map<String, Object>> findUsersLikedFilmsForTopFilms(int count) {
+        return jdbcTemplate.queryForList("SELECT * " +
+                "FROM users_liked_films " +
+                "WHERE film_id IN (SELECT f.film_id " +
+                "FROM films AS f " +
+                "LEFT JOIN mpa_rating AS r ON f.rating_id = r.rating_id " +
+                "LEFT JOIN users_liked_films AS l ON f.film_id = l.film_id " +
+                "GROUP BY f.film_id " +
+                "ORDER BY sum(l.user_id) DESC " +
+                "LIMIT ?)", count);
+    }
+
+    @Override
+    public void deleteUsersLikedFilms(int filmId) {
+        jdbcTemplate.update("DELETE users_liked_films WHERE film_id = ?", filmId);
+    }
+
+    @Override
+    public void addUsersLikedFilms(int filmId, int userId) {
+        jdbcTemplate.update("INSERT INTO users_liked_films(film_id, user_id) VALUES (?, ?)",
+                filmId, userId);
     }
 
     private User makeUser(ResultSet rs) throws SQLException {

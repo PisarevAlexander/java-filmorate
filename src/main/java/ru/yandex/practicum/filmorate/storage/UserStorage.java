@@ -16,4 +16,12 @@ public interface UserStorage {
     void update(User user);
 
     List<Map<String, Object>> findUsersLikedFilms();
+
+    List<Map<String, Object>> findUsersLikedFilmsById(int id);
+
+    List<Map<String, Object>> findUsersLikedFilmsForTopFilms(int count);
+
+    void deleteUsersLikedFilms(int filmId);
+
+    void addUsersLikedFilms(int filmId, int userId);
 }

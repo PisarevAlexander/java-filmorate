@@ -42,4 +42,22 @@ public class InMemoryUserStorage implements UserStorage {
     public List<Map<String, Object>> findUsersLikedFilms() {
         return List.of();
     }
+
+    @Override
+    public List<Map<String, Object>> findUsersLikedFilmsById(int id) {
+        return List.of();
+    }
+
+    @Override
+    public List<Map<String, Object>> findUsersLikedFilmsForTopFilms(int count) {
+        return List.of();
+    }
+
+    @Override
+    public void deleteUsersLikedFilms(int filmId) {
+    }
+
+    @Override
+    public void addUsersLikedFilms(int filmId, int userId) {
+    }
 }

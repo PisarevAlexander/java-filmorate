@@ -5,10 +5,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.model.enums.FilmGenre;
 import ru.yandex.practicum.filmorate.model.enums.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -24,12 +22,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> findAll() {
-        List<Film> films = jdbcTemplate.query("SELECT f.film_id, f.name, f.description, f.release_date, " +
+        return jdbcTemplate.query("SELECT f.film_id, f.name, f.description, f.release_date, " +
                         "f.duration, r.rating " +
                         "FROM films AS f " +
                         "LEFT JOIN mpa_rating AS r ON f.rating_id = r.rating_id",
                 (rs, rowNum) -> makeFilm(rs));
-        return films;
     }
 
     @Override
@@ -41,19 +38,6 @@ public class FilmDbStorage implements FilmStorage {
                             "LEFT JOIN mpa_rating AS r ON f.rating_id = r.rating_id " +
                             "WHERE film_id = ?",
                     ((rs, rowNum) -> makeFilm(rs)), filmId);
-            SqlRowSet likedUsers = jdbcTemplate.queryForRowSet("SELECT user_id " +
-                    "FROM users_liked_films " +
-                    "WHERE film_id = ?", film.getId());
-            while (likedUsers.next()) {
-                film.addUserId(likedUsers.getInt("user_id"));
-            }
-            SqlRowSet genres = jdbcTemplate.queryForRowSet("SELECT g.genre FROM films_genre AS f " +
-                            "JOIN genres AS g ON f.genre_id = g.genre_id " +
-                            "WHERE film_id = ?",
-                    film.getId());
-            while (genres.next()) {
-                film.addGenre(FilmGenre.valueOf(genres.getString("genre")));
-            }
             return Optional.of(film);
         } catch (DataAccessException exception) {
             return Optional.empty();
@@ -69,16 +53,7 @@ public class FilmDbStorage implements FilmStorage {
                 "GROUP BY f.film_id " +
                 "ORDER BY sum(l.user_id) DESC " +
                 "LIMIT ?";
-        List<Film> films = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count);
-        for (Film film : films) {
-            SqlRowSet likedUsers = jdbcTemplate.queryForRowSet("SELECT user_id " +
-                    "FROM users_liked_films " +
-                    "WHERE film_id = ?", film.getId());
-            while (likedUsers.next()) {
-                film.addUserId(likedUsers.getInt("user_id"));
-            }
-        }
-        return films;
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count);
     }
 
     @Override
@@ -96,9 +71,6 @@ public class FilmDbStorage implements FilmStorage {
             return stmt;
         }, keyHolder);
         film.setId(keyHolder.getKey().intValue());
-        if (!film.getGenres().isEmpty()) {
-            setGenres(film);
-        }
         return film;
     }
 
@@ -108,31 +80,11 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE film_id = ?";
         jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
                 film.getMpa().getId(), film.getId());
-        if (!film.getUserLikeFilm().isEmpty()) {
-            jdbcTemplate.update("DELETE users_liked_films WHERE film_id = ?", film.getId());
-            Set<Integer> likedUsers = film.getUserLikeFilm();
-            for (Integer likedUser : likedUsers) {
-                jdbcTemplate.update("INSERT INTO users_liked_films(film_id, user_id) VALUES (?, ?)",
-                        film.getId(), likedUser);
-            }
-        }
-        jdbcTemplate.update("DELETE films_genre WHERE film_id = ?", film.getId());
-        if (!film.getGenres().isEmpty()) {
-            setGenres(film);
-        }
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {
         return new Film(rs.getInt("film_id"), rs.getString("name"),
                 rs.getString("description"), rs.getDate("release_date").toLocalDate(),
                 rs.getLong("duration"), Mpa.valueOf(rs.getString("rating")));
-    }
-
-    private void setGenres(Film film) {
-        Set<FilmGenre> genres = film.getGenres();
-        for (FilmGenre genre : genres) {
-            jdbcTemplate.update("INSERT INTO films_genre(film_id, genre_id) VALUES (?, ?)",
-                    film.getId(), genre.getId());
-        }
     }
 }
