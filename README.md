@@ -67,7 +67,6 @@
 
 ## Stack
 - Java 11,
-- Spring Boot,
 - Maven,
 - Lombok,
 - H2.
