@@ -1,6 +1,41 @@
 # java-filmorate
 Фильмов много — и с каждым годом становится всё больше. Чем их больше, тем больше разных оценок. Чем больше оценок, тем сложнее сделать выбор. Filmorate сервис, который будет работать с фильмами и оценками пользователей, а также возвращать топ-5 фильмов, рекомендованных к просмотру. Теперь ни вам, ни вашим друзьям не придётся долго размышлять, что посмотреть вечером.
 
+## Stack
+- Java 11,
+- Spring Boot,
+- Maven,
+- Lombok,
+- H2.
+
+## API
+**Film**
+- GET /films - получить список всех фильмов
+- GET /films/{id} - получить фильм по id
+- GET /films/popular - получить топ фильмов
+- POST /films - добавить новый фильм
+- PUT /films - обновить фильм
+- PUT /films/{id}/like/{userId} - добавть лайк на фильм
+- DELETE /films/{id}/like/{userId} - удалить лайк с фильма
+
+**Genre**
+- GET /genres/{id} - получить жанр по id
+- GET /genres - получить список всех жанров
+
+**MPA**
+- GET /mpa/{id} - получить возрастной рейтинг по id
+- GET /mpa - получить список всех возрасных рейтингов
+
+**User**
+- GET /users - получить список пользователей
+- GET /users/{id} - получить пользователя по id
+- GET /users/{id}/friends - получить список друзей
+- GET /users/{id}/friends/common/{otherId} - получить список общих друзей
+- POST /users - добавить нового пользователя
+- PUT /users - обновить пользователя
+- PUT /users/{id}/friends/{friendId} - добавить в друзья
+- DELETE /users/{id}/friends/{friendId} - удалить из друзей
+
 ## **ERD**
 
 ![ER-диаграмма](https://github.com/PisarevAlexander/java-filmorate/blob/dba83cba1c5a02229fd9758952bfd13ebef11e09/ERD.png)
@@ -64,9 +99,3 @@
 > _**genre_id**_ идентификатор жанра фильма
 > 
 > _**genre**_ жанр фильма
-
-## Stack
-- Java 11,
-- Maven,
-- Lombok,
-- H2.
