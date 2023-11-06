@@ -1,21 +1,27 @@
 spring:
   profiles: development
   datasource:
+    # JDBC URL of the database.
     url: jdbc:h2:mem:./db/filmorate
+    # Login username of the database.
     username: sa
+    # Login password of the database.
     password: password
+    # Fully qualified name of the JDBC driver
     driverClassName: org.h2.Driver
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: none
+  # H2 console configuration
   h2:
     console.enabled: true
     console:
       path: /h2-console
       settings.trace: false
       settings.web-allow-others: false
+  # Mode to apply when determining whether initialization should be performed.
   sql:
     init:
       mode: always
